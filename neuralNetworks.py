@@ -15,10 +15,10 @@ batch_size = 100
 n_features = 2
 n_examples = 1000
 
-n_epochs = 1000
+n_epochs = 100
 
 x = tf.placeholder('float', [None, n_features])
-y = tf.placeholder('float')
+y = tf.placeholder('float', [None, n_classes])
 
 def neural_network_model(data):
 	"""
@@ -63,6 +63,7 @@ def train_neural_network(x):
 			for i in range(n_batches):
 				epoch_x = epoch_x_list[i]
 				epoch_y = epoch_y_list[i]
+				print(epoch_y)
 				_, c = sess.run([optimizer, cost], feed_dict={x:epoch_x, y:epoch_y})
 				epoch_loss += c
 			epoch_loss /= n_batches

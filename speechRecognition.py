@@ -34,8 +34,12 @@ def getBatches(batchSize, numBatches, fileName = 'trainingDataPaths.txt'):
 			word = filePath.split('/')[2]
 			epochY[count] = word2idx[word]
 			count += 1
+		epochY_one_hot = np.zeros((batchSize, len(word2idx.keys())))
+		for i in range(len(epochY)):
+			index = int(epochY[i])
+			epochY_one_hot[i][index] = 1
 		epochXList.append(np.array(epochX))
-		epochYList.append(epochY.reshape(batchSize,1))
+		epochYList.append(epochY_one_hot)
 	return epochXList, epochYList
 
 def getTestData(batchSize):
