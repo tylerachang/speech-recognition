@@ -11,22 +11,22 @@ def getFeatures(filename):
 		Computes features for a .wav file, in (n x 1) vector form.
 	"""
 	
-	# simple features where the desired index is the sum of two features
-	word = filename.split('/')[2]
-	word2idx = {'backward':0,'bed':1, 'bird':2,'cat':3, 'dog':4}
-	index = word2idx[word]
-	return np.array([2*index + 4, -1*index-4])
+#	# simple features where the desired index is the sum of two features
+#	word = filename.split('/')[2]
+#	word2idx = {'backward':0,'bed':1, 'bird':2,'cat':3, 'dog':4}
+#	index = word2idx[word]
+#	return np.array([2*index + 4, -1*index-4])
 	
 	numWindows = 50
 	spectrogram = computeSpectrogramFromFile(filename, numWindows)
 	# initialize with zero features per window
 	featuresMatrix = np.zeros((numWindows,0))
 	# add average amplitude per window
-	featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitude(spectrogram)), axis=1)
+	# featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitude(spectrogram)), axis=1)
 	# add frequencies at 9 percentiles for each window
 #	featuresMatrix = np.concatenate((featuresMatrix, getFrequencyPercentiles(spectrogram, 4)), axis=1)
 
-	featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitudes(spectrogram, 9)), axis=1)
+	featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitudes(spectrogram, 10)), axis=1)
 
 	return featuresMatrix.flatten()
 
@@ -73,9 +73,9 @@ def displaySpectrogram(spectrogram):
 	plt.ylabel("Frequency")
 	plt.colorbar(heatmap)
 	x_labels = np.arange(0, spectrogram.shape[1], max(spectrogram.shape[1]//10, 1))
-	y_labels = np.arange(0, spectrogram.shape[0], max(spectrogram.shape[0]//10, 1))
+	y_labels = np.arange(0, spectrogram.shape[0]//3, max(spectrogram.shape[0]//10, 1))
 	plt.xlim(-0.5, spectrogram.shape[1]-0.5)
-	plt.ylim(-0.5, spectrogram.shape[0]-0.5)
+	plt.ylim(-0.5, spectrogram.shape[0]//3-0.5)
 	axes = plt.gca();
 	axes.set_xticks(x_labels)
 	axes.set_xticklabels(x_labels)

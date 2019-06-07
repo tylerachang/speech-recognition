@@ -16,7 +16,7 @@ def getAllFiles():
     for word in words:
         for (dirPath, dirNames, fileNames) in walk(dataPath + word + '/'):
             for fileName in fileNames:
-                if fileNames[0] != '.': # do not include hidden files
+                if fileName[0] != '.': # do not include hidden files
                     files.append(dataPath + word + '/' + fileName)
     return files
 
