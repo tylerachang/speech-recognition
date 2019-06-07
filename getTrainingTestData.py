@@ -30,7 +30,6 @@ def getData(percentOfTraining):
     numTraining = int(len(allFiles) * percentOfTraining)
     trainingList = allFiles[:numTraining+1]
     testList = allFiles[numTraining+1:]
-    # potentially return here and call this function in neuralNetworks.py
 
     # write the file names to textfiles
     trainingFile = open("trainingDataPaths.txt","w+")
@@ -41,5 +40,3 @@ def getData(percentOfTraining):
     for fileName in testList:
         testFile.write(fileName+"\n")
     testFile.close()
-
-getData(0.8)

@@ -40,7 +40,7 @@ def neural_network_model(data):
 	l2 = tf.nn.relu(l2)
 	l3 = tf.add(tf.matmul(l2,hidden_3_layer['weights']), hidden_3_layer['biases'])
 	l3 = tf.nn.relu(l3)
-	
+
 	output = tf.matmul(l3,output_layer['weights']) + output_layer['biases']
 	return output
 
@@ -50,22 +50,25 @@ def train_neural_network(x):
 	cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=prediction,labels=y))
 	# use Adam optimizer instead of stochastic gradient descent
 	optimizer = tf.train.AdamOptimizer(learning_rate = 0.0001).minimize(cost)
-    
+
 	n_epochs = 30
 	with tf.Session() as sess:
 		sess.run(tf.initialize_all_variables())
 
 		for epoch in range(n_epochs):
 			epoch_loss = 0
-			for i in range(int(n_examples/batch_size)):
-				epoch_x, epoch_y = speechRecognition.getBatch(batch_size)
-				j, c = sess.run([optimizer, cost], feed_dict={x: epoch_x, y: epoch_y})
+			n_batch = int(n_examples/batch_size)
+			epoch_x_list, epoch_y_list  = speechRecognition.getBatch(batch_size, n_batch)
+			for i in range(n_batch):
+				epoch_x, epoch_y = speechRecognition.getBatch(batch_size, n_batch)
+				j, c = sess.run([optimizer, cost], feed_dict={x: epoch_x_list[i],
+															  y: epoch_y_list[i]})
 				epoch_loss += c
 			print('Epoch', epoch, 'completed out of', n_epochs, 'loss:', epoch_loss)
 
 		correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
 		accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
 		test_x, test_y = speechRecognition.getTestData(batch_size)
-		print('Accuracy:', accuracy.eval({x: test_x, y: test_y}))
+		print('Accuracy:', accuracy.eval({x: test_x[0], y: test_y[0]}))
 
 train_neural_network(x)
