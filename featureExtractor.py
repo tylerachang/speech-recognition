@@ -10,12 +10,24 @@ def getFeatures(filename):
 	"""
 		Computes features for a .wav file, in (n x 1) vector form.
 	"""
+	
+	# simple features where the desired index is the sum of two features
+	word = filename.split('/')[2]
+	word2idx = {'backward':0,'bed':1, 'bird':2,'cat':3, 'dog':4}
+	index = word2idx[word]
+	return np.array([2*index + 4, -1*index-4])
+	
 	numWindows = 50
 	spectrogram = computeSpectrogramFromFile(filename, numWindows)
 	# initialize with zero features per window
 	featuresMatrix = np.zeros((numWindows,0))
 	# add average amplitude per window
-	featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitudes(spectrogram)), axis=1)
+	featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitude(spectrogram)), axis=1)
+	# add frequencies at 9 percentiles for each window
+#	featuresMatrix = np.concatenate((featuresMatrix, getFrequencyPercentiles(spectrogram, 4)), axis=1)
+
+	featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitudes(spectrogram, 9)), axis=1)
+
 	return featuresMatrix.flatten()
 
 def computeSpectrogramFromFile(filename, numWindows):
@@ -71,19 +83,45 @@ def displaySpectrogram(spectrogram):
 	axes.set_yticklabels(y_labels)
 	plt.show()
 	
-def getFrequencyPercentiles(numPercentiles, spectrogram):
+def getFrequencyPercentiles(spectrogram, numPercentiles):
 	"""
 		Returns a (numWindows x numPercentiles) matrix containing the frequencies
 		at uniformly spaced percentiles.
 	"""
-	for i in range(spectrogram.shape[0]):
-		pass
+	# amplitude between percentiles is the sum along the row divided by numPercentiles+1
+	amplitudesBetweenPercentiles = spectrogram.sum(axis=1)/(numPercentiles+1)
+	percentileMatrix = np.zeros((spectrogram.shape[0], numPercentiles))
+	for window in range(spectrogram.shape[0]):
+		currTotal = 0
+		currPercentile = 0
+		for frequencyIndex in range(spectrogram.shape[1]):
+			currTotal += spectrogram[window][frequencyIndex]
+			while currTotal > amplitudesBetweenPercentiles[window]:
+				# can just insert the frequency index instead of absolute frequency
+				percentileMatrix[window][currPercentile] = frequencyIndex
+				currTotal -= amplitudesBetweenPercentiles[window]
+				currPercentile = min(currPercentile+1, numPercentiles-1)
+	return percentileMatrix
 	
-def getAverageAmplitudes(spectrogram):
+def getAverageAmplitude(spectrogram):
 	"""
 		Returns a (numWindows x 1) matrix containing the average amplitude for each window.
 	"""
 	# sum along rows and divide by the number of columns
-	averageAmplitudes = np.sum(spectrogram, axis=1)/spectrogram.shape[1]
+	averageAmplitudes = spectrogram.sum(axis=1)/spectrogram.shape[1]
 	# reshape to (numWindows x 1) instead of (numWindows, )
 	return averageAmplitudes.reshape((spectrogram.shape[0], 1))
+
+def getAverageAmplitudes(spectrogram, numFrequencyBins):
+	"""
+		Returns a (numWindows x numFrequencyBins) matrix containing the average amplitude
+		in each frequency bin for each window.
+	"""
+	amplitudeMatrix = np.zeros((spectrogram.shape[0], 0))
+	numAmplitudesToAverage = spectrogram.shape[1]//numFrequencyBins
+	for i in range(numFrequencyBins):
+		partialSpectrogram = spectrogram[:,i*numAmplitudesToAverage:(i+1)*numAmplitudesToAverage+1]
+		averageAmplitudes = partialSpectrogram.sum(axis=1)/numAmplitudesToAverage
+		amplitudeMatrix = np.concatenate((amplitudeMatrix, \
+			averageAmplitudes.reshape(averageAmplitudes.shape[0],1)), axis=1)
+	return amplitudeMatrix

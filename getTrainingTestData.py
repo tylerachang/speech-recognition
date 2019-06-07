@@ -5,7 +5,7 @@ import random
 from os import walk
 
 words = ['backward','bed', 'bird','cat', 'dog']
-dataPath = './data.02/'
+dataPath = './data/'
 
 def getAllFiles():
     '''
@@ -40,3 +40,5 @@ def getData(percentOfTraining):
     for fileName in testList:
         testFile.write(fileName+"\n")
     testFile.close()
+
+getData(0.9)

@@ -12,7 +12,7 @@ n_nodes_hl3 = 500
 
 n_classes = 5
 batch_size = 100
-n_features = 50
+n_features = 2
 n_examples = 1000
 
 x = tf.placeholder('float', [None, n_features])
@@ -49,20 +49,20 @@ def train_neural_network(x):
 	#TODO: ask Anna why use reduce_mean and what this line means
 	cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=prediction,labels=y))
 	# use Adam optimizer instead of stochastic gradient descent
-	optimizer = tf.train.AdamOptimizer(learning_rate = 0.0001).minimize(cost)
+	optimizer = tf.train.AdamOptimizer(learning_rate = 0.001).minimize(cost)
 
 	n_epochs = 30
 	with tf.Session() as sess:
-		sess.run(tf.initialize_all_variables())
+		sess.run(tf.global_variables_initializer())
 
 		for epoch in range(n_epochs):
 			epoch_loss = 0
-			n_batch = int(n_examples/batch_size)
-			epoch_x_list, epoch_y_list  = speechRecognition.getBatch(batch_size, n_batch)
-			for i in range(n_batch):
-				epoch_x, epoch_y = speechRecognition.getBatch(batch_size, n_batch)
-				j, c = sess.run([optimizer, cost], feed_dict={x: epoch_x_list[i],
-															  y: epoch_y_list[i]})
+			n_batches = n_examples//batch_size
+			epoch_x_list, epoch_y_list  = speechRecognition.getBatches(batch_size, n_batches)
+			for i in range(n_batches):
+				epoch_x = epoch_x_list[i]
+				epoch_y = epoch_y_list[i]
+				j, c = sess.run([optimizer, cost], feed_dict={x:epoch_x, y:epoch_y})
 				epoch_loss += c
 			print('Epoch', epoch, 'completed out of', n_epochs, 'loss:', epoch_loss)
 
