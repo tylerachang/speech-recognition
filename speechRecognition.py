@@ -2,20 +2,23 @@
 	Recognizes audio files hopefully!
 """
 
-import neuralNetworks
 import featureExtractor
 import random
 import numpy as np
 from os import walk
 
 word2idx = {'backward':0,'bed':1, 'bird':2,'cat':3, 'dog':4}
-myPath = './data.02/'
+dataPath = './data/'
 
 def getBatch(batchSize):
 	'''
-		This function randomly select batchSize/5 number of data from each
-		word's audio files. We take batchSize/5 + remainder from the last
-		word's audio file.
+		This function randomly selects batchSize//5 examples from each
+		word's audio files. We also take batchSize%5 examples from a random word's
+		audio files to ensure the proper batch size.
+		
+		TODO: CLEAN CODE
+		Create lists of training and testing filepaths.
+		Are batches independent?
 	'''
 	epochX = []
 	epochY = np.zeros(batchSize)
@@ -23,26 +26,31 @@ def getBatch(batchSize):
 
 	for word in word2idx.keys():
 		files = []
-		for (dirPath, dirNames, fileNames) in walk(myPath + word + '/'):
+		for (dirPath, dirNames, fileNames) in walk(dataPath + word + '/'):
 			files.extend(fileNames)
 		sampleFiles = random.sample(files, batchSize//5)
 		for fileName in sampleFiles:
-			epochX.append(featureExtractor.getFeatures(fileName))
+			if fileName[0:2] == "._":
+				fileName = fileName[2:]
+			epochX.append(featureExtractor.getFeatures(dataPath + word + '/' + fileName))
 			epochY[count] = word2idx[word]
 			count += 1
-
+	
+	# get files to fill in the rest of the batch
 	files = []
 	word = random.sample(word2idx.keys(),1)[0]
-	for (dirPath, dirNames, fileNames) in walk(myPath + word + '/'):
+	for (dirPath, dirNames, fileNames) in walk(dataPath + word + '/'):
 		files.extend(fileNames)
 	sampleFiles = random.sample(files, batchSize%5)
 	for fileName in sampleFiles:
-		epochX.append(featureExtractor.getFeatures(fileName))
+		if fileName[0:2] == "._":
+			fileName = fileName[2:]
+		epochX.append(featureExtractor.getFeatures(dataPath + word + '/' + fileName))
 		epochY[count] = word2idx[word]
 		count += 1
+	
+	return np.array(epochX), epochY.reshape(100, 1)
 
-	print(epochX, epochY)
-	return epochX, epochY
-
-def getTestData():
-	pass
+def getTestData(batchSize):
+	# TODO: make test data
+	return getBatch(batchSize)

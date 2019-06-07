@@ -6,6 +6,18 @@ import matplotlib.pyplot as plt
 from scipy.io import wavfile
 import numpy as np
 
+def getFeatures(filename):
+	"""
+		Computes features for a .wav file, in (n x 1) vector form.
+	"""
+	numWindows = 50
+	spectrogram = computeSpectrogramFromFile(filename, numWindows)
+	# initialize with zero features per window
+	featuresMatrix = np.zeros((numWindows,0))
+	# add average amplitude per window
+	featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitudes(spectrogram)), axis=1)
+	return featuresMatrix.flatten()
+
 def computeSpectrogramFromFile(filename, numWindows):
 	"""
 		Computes a spectrogram matrix from a .wav file.
@@ -25,7 +37,6 @@ def computeSpectrogramFromFile(filename, numWindows):
 		frequencyAmplitudes = np.absolute(transformedData) # convert complex numbers to magnitudes
 		# because symmetric, take only the first half of the frequency amplitudes
 		spectrogram[i] = frequencyAmplitudes[0:numFrequencies]
-	displaySpectrogram(spectrogram)
 	return spectrogram
 
 def displayFrequencyAmplitudes(frequencyAmplitudes):
@@ -60,14 +71,19 @@ def displaySpectrogram(spectrogram):
 	axes.set_yticklabels(y_labels)
 	plt.show()
 	
-# TODO: extract features from spectrogram
+def getFrequencyPercentiles(numPercentiles, spectrogram):
+	"""
+		Returns a (numWindows x numPercentiles) matrix containing the frequencies
+		at uniformly spaced percentiles.
+	"""
+	for i in range(spectrogram.shape[0]):
+		pass
 	
-computeSpectrogramFromFile("bird0.wav", 50)
-computeSpectrogramFromFile("bird1.wav", 50)
-computeSpectrogramFromFile("bird2.wav", 50)
-computeSpectrogramFromFile("cat0.wav", 50)
-computeSpectrogramFromFile("cat1.wav", 50)
-computeSpectrogramFromFile("cat2.wav", 50)
-computeSpectrogramFromFile("backward0.wav", 50)
-computeSpectrogramFromFile("backward1.wav", 50)
-computeSpectrogramFromFile("backward2.wav", 50)
+def getAverageAmplitudes(spectrogram):
+	"""
+		Returns a (numWindows x 1) matrix containing the average amplitude for each window.
+	"""
+	# sum along rows and divide by the number of columns
+	averageAmplitudes = np.sum(spectrogram, axis=1)/spectrogram.shape[1]
+	# reshape to (numWindows x 1) instead of (numWindows, )
+	return averageAmplitudes.reshape((spectrogram.shape[0], 1))
