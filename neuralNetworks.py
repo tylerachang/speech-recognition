@@ -1,5 +1,5 @@
 """
-	Implementation of a neural network using TensorFlow.
+	Implementation of a neural network using TensorFlow (v1).
 	Implements a basic feedforward NN.
 	
 	Code modified from:
@@ -48,7 +48,7 @@ class NeuralNetwork:
 		output = tf.matmul(data,output_layer['weights']) + output_layer['biases']
 		return output
 
-	def train_neural_network(self, n_epochs):
+	def train_neural_network(self, n_epochs, output_dir = ""):
 		"""
 			Trains the neural network model.
 		"""
@@ -78,7 +78,28 @@ class NeuralNetwork:
 				epoch_loss /= n_batches
 				print('Epoch', epoch, 'completed out of', n_epochs, 'loss:', epoch_loss)
 
+			# print the accuracy on the test data
 			correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
 			accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
-			test_x, test_y = batches.getTestData(self.batch_size)
-			print('Accuracy:', accuracy.eval({x: test_x[0], y: test_y[0]}))
+			test_x, test_y = batches.getTestData()
+			print('Accuracy:', accuracy.eval({x: test_x, y: test_y}))
+			
+			# save the model
+			if output_dir != "":
+				tf.saved_model.simple_save(sess, output_dir, \
+					inputs={'x':x}, outputs={'prediction':prediction})
+				print("Model saved to: ", output_dir)
+
+	def evaluate_model(self, model_dir):
+		"""
+			Evaluates the accuracy of a saved model on the test data.
+		"""
+		predictFunc = tf.contrib.predictor.from_saved_model(model_dir)
+		test_x, test_y = batches.getTestData()
+		prediction = predictFunc({'x':test_x})['prediction']
+		numCorrect = 0
+		for i in range(test_x.shape[0]):
+			if np.argmax(prediction[i]) == np.argmax(test_y[i]):
+				numCorrect += 1
+		print('Accuracy:', float(numCorrect)/test_x.shape[0])
+

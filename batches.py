@@ -51,14 +51,18 @@ def getBatches(batchSize, numBatches, filePaths = 'trainingDataPaths.txt'):
 		epochYList.append(epochY_one_hot)
 	return epochXList, epochYList
 
-def getTestData(batchSize):
+def getTestData():
 	"""
-		Randomly selects batchSize examples from the test data.
+		Returns the test data batch.
 	"""
-	return getBatches(batchSize, 1, filePaths = 'testDataPaths.txt')
+	testSize = getTotalNumFiles('testDataPaths.txt')
+	testX, testY = getBatches(testSize, 1, filePaths = 'testDataPaths.txt')
+	return testX[0], testY[0]
 
-def getValidationData(batchSize):
+def getValidationData():
 	"""
-		Randomly selects batchSize examples from the validation data.
+		Returns the validation data batch.
 	"""
-	return getBatches(batchSize, 1, filePaths = 'validationDataPaths.txt')
+	validationSize = getTotalNumFiles('validationDataPaths.txt')
+	valX, valY = getBatches(validationSize, 1, filePaths = 'validationDataPaths.txt')
+	return valX[0], valY[0]
