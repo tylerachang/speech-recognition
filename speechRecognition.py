@@ -1,5 +1,5 @@
 """
-	Recognizes audio files hopefully!
+	Pulls batches of examples from training, validation, or test datasets.
 """
 
 import featureExtractor
@@ -7,20 +7,27 @@ import random
 import numpy as np
 from os import walk
 
-word2idx = {'backward':0,'bed':1, 'bird':2,'cat':3, 'dog':4}
+word2index = {'backward':0,'bed':1, 'bird':2,'cat':3, 'dog':4}
 dataPath = './data/'
 
-def getBatches(batchSize, numBatches, fileName = 'trainingDataPaths.txt'):
-	'''
-		This function randomly selects `batchSize` examples from the training
-		data, and it returns a list of `numBatch` number of batches that cover
-		the whole training dataset.
-	'''
-	
-	f = open(fileName, 'r')
+def getNumFiles(filePaths = 'trainingDataPaths.txt'):
+	"""
+		Returns the number of filepaths listed in a text file.
+		By default returns the number of training data paths.
+	"""
+	f = open(filePaths, 'r')
+	return len(f.readlines())
+
+def getBatches(batchSize, numBatches, filePaths = 'trainingDataPaths.txt'):
+	"""
+		For each batch, selects batchSize examples from the data.
+		Returns a list of numBatch number of batches that cover the entire
+		training dataset.
+	"""
+	f = open(filePaths, 'r')
 	files = f.readlines()
 	random.shuffle(files)
-		
+	
 	epochXList = []
 	epochYList = []
 	for i in range(numBatches):
@@ -32,18 +39,26 @@ def getBatches(batchSize, numBatches, fileName = 'trainingDataPaths.txt'):
 			# get rid of the new line character
 			epochX.append(featureExtractor.getFeatures(filePath[:-1]))
 			word = filePath.split('/')[2]
-			epochY[count] = word2idx[word]
+			epochY[count] = word2index[word]
 			count += 1
-		epochY_one_hot = np.zeros((batchSize, len(word2idx.keys())))
+		# get y labels as one-hot vectors
+		epochY_one_hot = np.zeros((batchSize, len(word2index.keys())))
 		for i in range(len(epochY)):
 			index = int(epochY[i])
 			epochY_one_hot[i][index] = 1
+
 		epochXList.append(np.array(epochX))
 		epochYList.append(epochY_one_hot)
 	return epochXList, epochYList
 
 def getTestData(batchSize):
-	'''
-		This function randomly selects batchSize examples from the test data.
-	'''
-	return getBatches(batchSize, 1, fileName = 'testDataPaths.txt')
+	"""
+		Randomly selects batchSize examples from the test data.
+	"""
+	return getBatches(batchSize, 1, filePaths = 'testDataPaths.txt')
+
+def getValidationData(batchSize):
+	"""
+		Randomly selects batchSize examples from the validation data.
+	"""
+	return getBatches(batchSize, 1, filePaths = 'validationDataPaths.txt')

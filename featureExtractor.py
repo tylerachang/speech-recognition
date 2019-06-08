@@ -6,25 +6,33 @@ import matplotlib.pyplot as plt
 from scipy.io import wavfile
 import numpy as np
 
+def getSimpleFeatures(filename):
+	"""
+		Returns a (2 x 1) feature vector where the desired index
+		is the sum of the two features. Used to test our NN implementation.
+	"""
+	word = filename.split('/')[2]
+	word2index = {'backward':0,'bed':1, 'bird':2,'cat':3, 'dog':4}
+	index = word2index[word]
+	return np.array([2*index + 4, -1*index-4])
+
 def getFeatures(filename):
 	"""
 		Computes features for a .wav file, in (n x 1) vector form.
+		Can modify this function to get different features, but remember to change
+		n_features in the neural network. Included some commented-out code for possible
+		other features.
 	"""
-	
-#	# simple features where the desired index is the sum of two features
-#	word = filename.split('/')[2]
-#	word2idx = {'backward':0,'bed':1, 'bird':2,'cat':3, 'dog':4}
-#	index = word2idx[word]
-#	return np.array([2*index + 4, -1*index-4])
-	
 	numWindows = 50
 	spectrogram = computeSpectrogramFromFile(filename, numWindows)
 	# initialize with zero features per window
 	featuresMatrix = np.zeros((numWindows,0))
-	# add average amplitude per window
-	# featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitude(spectrogram)), axis=1)
-	# add frequencies at 9 percentiles for each window
-#	featuresMatrix = np.concatenate((featuresMatrix, getFrequencyPercentiles(spectrogram, 4)), axis=1)
+	
+	# can add average amplitude per window
+#	featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitude(spectrogram)), axis=1)
+	# add frequencies at various percentiles for each window
+#	featuresMatrix = np.concatenate((featuresMatrix, \
+#		getFrequencyPercentiles(spectrogram, 9)), axis=1)
 
 	featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitudes(spectrogram, 10)), axis=1)
 
@@ -73,9 +81,9 @@ def displaySpectrogram(spectrogram):
 	plt.ylabel("Frequency")
 	plt.colorbar(heatmap)
 	x_labels = np.arange(0, spectrogram.shape[1], max(spectrogram.shape[1]//10, 1))
-	y_labels = np.arange(0, spectrogram.shape[0]//3, max(spectrogram.shape[0]//10, 1))
+	y_labels = np.arange(0, spectrogram.shape[0], max(spectrogram.shape[0]//10, 1))
 	plt.xlim(-0.5, spectrogram.shape[1]-0.5)
-	plt.ylim(-0.5, spectrogram.shape[0]//3-0.5)
+	plt.ylim(-0.5, spectrogram.shape[0]-0.5)
 	axes = plt.gca();
 	axes.set_xticks(x_labels)
 	axes.set_xticklabels(x_labels)
@@ -118,8 +126,10 @@ def getAverageAmplitudes(spectrogram, numFrequencyBins):
 		in each frequency bin for each window.
 	"""
 	amplitudeMatrix = np.zeros((spectrogram.shape[0], 0))
+	# each frequency bin has equal size
 	numAmplitudesToAverage = spectrogram.shape[1]//numFrequencyBins
 	for i in range(numFrequencyBins):
+		# consider only some frequencies in the spectrogram
 		partialSpectrogram = spectrogram[:,i*numAmplitudesToAverage:(i+1)*numAmplitudesToAverage+1]
 		averageAmplitudes = partialSpectrogram.sum(axis=1)/numAmplitudesToAverage
 		amplitudeMatrix = np.concatenate((amplitudeMatrix, \

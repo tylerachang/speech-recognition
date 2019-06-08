@@ -9,10 +9,10 @@ words = ['backward','bed', 'bird','cat', 'dog']
 dataPath = './data/'
 
 def getAllFiles():
-	'''
+	"""
 		Returns a list of all file names (paths) of the audio files of words
 		that we care about.
-	'''
+	"""
 	files = []
 	for word in words:
 		for (dirPath, dirNames, fileNames) in walk(dataPath + word + '/'):
@@ -22,13 +22,13 @@ def getAllFiles():
 	return files
 
 def createDataFiles(percentOfTraining):
-	'''
+	"""
 		Generates training, validation, and test data paths based on the
 		words and percentage of data that are desired to be for training.
 		Training: percentOfTraining
 		Test: (1-percentOfTraining)/2
 		Validation: (1-percentOfTraining)/2
-	'''
+	"""
 	allFiles = getAllFiles()
 	random.shuffle(allFiles)
 	numTraining = int(len(allFiles) * percentOfTraining)
