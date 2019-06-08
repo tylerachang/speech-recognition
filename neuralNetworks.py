@@ -7,7 +7,7 @@
 """
 
 import tensorflow as tf
-import speechRecognition
+import batches
 import numpy as np
 
 class NeuralNetwork:
@@ -17,7 +17,7 @@ class NeuralNetwork:
 		self.n_hidden_layers = len(self.n_hidden_nodes)
 		
 		self.n_classes = n_classes
-		self.n_examples = speechRecognition.getNumFiles() # get number of training files
+		self.n_examples = batches.getTotalNumFiles() # get total number of training files
 		# batch size should divide n_examples to ensure all data is included, but should
 		# not throw any errors
 		self.batch_size = batch_size
@@ -69,7 +69,7 @@ class NeuralNetwork:
 				epoch_loss = 0
 				n_batches = self.n_examples//self.batch_size
 				epoch_x_list, epoch_y_list = \
-					speechRecognition.getBatches(self.batch_size, n_batches)
+					batches.getBatches(self.batch_size, n_batches)
 				for i in range(n_batches):
 					epoch_x = epoch_x_list[i]
 					epoch_y = epoch_y_list[i]
@@ -80,5 +80,5 @@ class NeuralNetwork:
 
 			correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
 			accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
-			test_x, test_y = speechRecognition.getTestData(self.batch_size)
+			test_x, test_y = batches.getTestData(self.batch_size)
 			print('Accuracy:', accuracy.eval({x: test_x[0], y: test_y[0]}))
