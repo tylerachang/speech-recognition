@@ -5,7 +5,7 @@ import random
 from os import walk
 
 words = ['backward','bed', 'bird','cat', 'dog']
-dataPath = './data/'
+dataPath = './data.02/'
 
 def getAllFiles():
     '''
@@ -24,12 +24,17 @@ def getData(percentOfTraining):
     '''
         Generate training data and test data paths based on the words and
         percentage of data that are desired to be for training.
+        Training: percentOfTraining
+        Test: (1-percentOfTraining)/2
+        Val: (1-percentOfTraining)/2
     '''
     allFiles = getAllFiles()
     random.shuffle(allFiles)
     numTraining = int(len(allFiles) * percentOfTraining)
+    numTest = int(len(allFiles) * (1-percentOfTraining)/2)
     trainingList = allFiles[:numTraining+1]
-    testList = allFiles[numTraining+1:]
+    testList = allFiles[numTraining+1:numTraining+numTest+1]
+    valList = allFiles[numTraining+numTest+1:]
 
     # write the file names to textfiles
     trainingFile = open("trainingDataPaths.txt","w+")
@@ -40,5 +45,9 @@ def getData(percentOfTraining):
     for fileName in testList:
         testFile.write(fileName+"\n")
     testFile.close()
+    valFile = open("validationDataPaths.txt","w+")
+    for fileName in valList:
+        valFile.write(fileName+"\n")
+    valFile.close()
 
 getData(0.9)
