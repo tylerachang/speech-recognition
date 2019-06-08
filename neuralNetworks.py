@@ -6,14 +6,14 @@ import tensorflow as tf
 import speechRecognition
 import numpy as np
 
-n_nodes_hl1 = 2
-n_nodes_hl2 = 2
-n_nodes_hl3 = 2
+n_nodes_hl1 = 100
+n_nodes_hl2 = 100
+n_nodes_hl3 = 100
 
 n_classes = 5
 batch_size = 100
-n_features = 2
-n_examples = 1000
+n_features = 500
+n_examples = 8900 # using the first five words
 
 n_epochs = 100
 
@@ -51,7 +51,7 @@ def train_neural_network(x):
 	# use softmax cross entropy as loss
 	cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=prediction,labels=y))
 	# use Adam optimizer instead of stochastic gradient descent
-	optimizer = tf.train.AdamOptimizer(learning_rate = 0.0001).minimize(cost)
+	optimizer = tf.train.AdamOptimizer(learning_rate = 0.001).minimize(cost)
 
 	with tf.Session() as sess:
 		sess.run(tf.global_variables_initializer())
@@ -63,17 +63,14 @@ def train_neural_network(x):
 			for i in range(n_batches):
 				epoch_x = epoch_x_list[i]
 				epoch_y = epoch_y_list[i]
-				print(epoch_y)
 				_, c = sess.run([optimizer, cost], feed_dict={x:epoch_x, y:epoch_y})
 				epoch_loss += c
 			epoch_loss /= n_batches
 			print('Epoch', epoch, 'completed out of', n_epochs, 'loss:', epoch_loss)
 
 		correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
-		accuracy = tf.cast(correct, 'float')
+		accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
 		test_x, test_y = speechRecognition.getTestData(batch_size)
 		print('Accuracy:', accuracy.eval({x: test_x[0], y: test_y[0]}))
-		print(test_x[0])
-		print(prediction.eval({x: test_x[0]}))
 
 train_neural_network(x)
