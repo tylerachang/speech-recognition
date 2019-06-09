@@ -1,6 +1,6 @@
 """
-	Implementation of a neural network using TensorFlow (v1).
-	Implements a basic feedforward NN.
+	Implementation of an LSTM neural network using TensorFlow (v1).
+	Uses out-of-the-box LSTM cell implementations.
 	
 	Code modified from:
 	https://pythonprogramming.net/tensorflow-neural-network-session-machine-learning-tutorial/
@@ -10,52 +10,49 @@ import tensorflow as tf
 import batches
 import numpy as np
 
-class NeuralNetwork:
+class RecurrentNeuralNetwork:
 	
-	def __init__(self, n_classes, n_features, batch_size, n_hidden_nodes = [10,10,10]):
+	def __init__(self, n_classes, n_chunks, chunk_size, rnn_size, batch_size):
 		tf.reset_default_graph()
-		self.n_hidden_nodes = n_hidden_nodes
-		self.n_hidden_layers = len(self.n_hidden_nodes)
-		
+		self.rnn_size = rnn_size
+			
 		self.n_classes = n_classes
 		self.n_examples = batches.getTotalNumFiles() # get total number of training files
 		# batch size should divide n_examples to ensure all data is included, but should
 		# not throw any errors
 		self.batch_size = batch_size
-		self.n_features = n_features
+		self.n_chunks = n_chunks
+		self.chunk_size = chunk_size	
 
-	def neural_network_model(self, data):
+	def recurrent_neural_network_model(self, data):
 		"""
-			Defines the neural network model.
+			Defines the recurrent neural network model.
 		"""
-		# initialize weights and biases as zero
-		hidden_layers = []
-		hidden_layers.append( \
-			{'weights':tf.Variable(tf.random_normal([self.n_features, self.n_hidden_nodes[0]])), \
-			 'biases':tf.Variable(tf.random_normal([self.n_hidden_nodes[0]]))})
-		for i in range(self.n_hidden_layers-1):
-			hidden_layers.append( \
-				{'weights':tf.Variable(tf.random_normal( \
-					[self.n_hidden_nodes[i], self.n_hidden_nodes[i+1]])), \
-				'biases':tf.Variable(tf.random_normal([self.n_hidden_nodes[i+1]]))})
-		output_layer = \
-			{'weights':tf.Variable(tf.random_normal([self.n_hidden_nodes[-1], self.n_classes])), \
-			 'biases':tf.Variable(tf.random_normal([self.n_classes]))}
-		
-		for i in range(self.n_hidden_layers):
-			data = tf.add(tf.matmul(data,hidden_layers[i]['weights']), hidden_layers[i]['biases'])
-			# use sigmoid instead of relu because relu results in very large weights
-			data = tf.nn.sigmoid(data)
-		output = tf.matmul(data,output_layer['weights']) + output_layer['biases']
+		outputLayer = {'weights':tf.Variable(tf.random_normal([self.rnn_size, self.n_classes])),
+				 'biases':tf.Variable(tf.random_normal([self.n_classes]))}
+
+		# transpose such that dim 0 is time window, dim 1 is example index, and
+		# dim 2 is feature (for the example at the given time)
+		data = tf.transpose(data, perm=[1,0,2])
+		# flatten so that each row is a chunk
+		data = tf.reshape(data, [-1, self.chunk_size])
+		# create a list of (n_chunks x chunk_size) matrices (each matrix
+		# corresponds with one example)
+		data = tf.split(data, self.n_chunks, 0)
+
+		lstm_cell = tf.nn.rnn_cell.LSTMCell(self.rnn_size, state_is_tuple=True)
+		outputs, states = tf.nn.static_rnn(lstm_cell, data, dtype=tf.float32)
+
+		output = tf.matmul(outputs[-1],outputLayer['weights']) + outputLayer['biases']
 		return output
 
 	def train_neural_network(self, n_epochs, output_dir = ""):
 		"""
-			Trains the neural network model.
+			Trains the recurrent neural network model.
 		"""
-		x = tf.placeholder('float', [None, self.n_features])
+		x = tf.placeholder('float', [None, self.n_chunks, self.chunk_size])
 		y = tf.placeholder('float', [None, self.n_classes])
-		prediction = self.neural_network_model(x)
+		prediction = self.recurrent_neural_network_model(x)
 		# use softmax cross entropy as loss
 		cost = tf.reduce_mean( \
 			tf.nn.softmax_cross_entropy_with_logits_v2(logits=prediction,labels=y))
@@ -74,6 +71,9 @@ class NeuralNetwork:
 				for i in range(n_batches):
 					epoch_x = epoch_x_list[i]
 					epoch_y = epoch_y_list[i]
+					# reshape epoch_x to represent each example in chunks
+					epoch_x = epoch_x.reshape( \
+						(self.batch_size, self.n_chunks, self.chunk_size))
 					_, c = sess.run([optimizer, cost], feed_dict={x:epoch_x, y:epoch_y})
 					epoch_loss += c
 				epoch_loss /= n_batches
@@ -83,8 +83,9 @@ class NeuralNetwork:
 				correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
 				accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
 				val_x, val_y = batches.getValidationData()
+				val_x = val_x.reshape((-1, self.n_chunks, self.chunk_size))
 				print('Accuracy:', accuracy.eval({x: val_x, y: val_y}))
-
+			
 			# save the model
 			if output_dir != "":
 				tf.saved_model.simple_save(sess, output_dir, \
@@ -97,6 +98,7 @@ class NeuralNetwork:
 		"""
 		predictFunc = tf.contrib.predictor.from_saved_model(model_dir)
 		test_x, test_y = batches.getTestData()
+		test_x = test_x.reshape((-1, self.n_chunks, self.chunk_size))
 		prediction = predictFunc({'x':test_x})['prediction']
 		numCorrect = 0
 		for i in range(test_x.shape[0]):

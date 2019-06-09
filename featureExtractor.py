@@ -20,8 +20,8 @@ def getFeatures(filename):
 	"""
 		Computes features for a .wav file, in (n x 1) vector form.
 		Can modify this function to get different features, but remember to change
-		n_features in the neural network. Included some commented-out code for possible
-		other features.
+		num features in the neural network. Included some commented-out code for
+		possible other features.
 	"""
 	numWindows = 50
 	spectrogram = computeSpectrogramFromFile(filename, numWindows)
@@ -30,9 +30,9 @@ def getFeatures(filename):
 	
 	# can add average amplitude per window
 #	featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitude(spectrogram)), axis=1)
-	# add frequencies at various percentiles for each window
+	# can add frequencies at various percentiles for each window
 #	featuresMatrix = np.concatenate((featuresMatrix, \
-#		getFrequencyPercentiles(spectrogram, 9)), axis=1)
+#		getFrequencyPercentiles(spectrogram, 3)), axis=1)
 
 	featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitudes(spectrogram, 10)), axis=1)
 
