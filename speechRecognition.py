@@ -8,21 +8,14 @@ import datetime
 
 #rnn = rnn.RecurrentNeuralNetwork(5, 50, 10, 128, 100)
 #rnn.train_neural_network(5, "")
-#rnn.evaluate_model("a")
+#rnn.evaluate_model("x")
 #neuralNetwork = nn.NeuralNetwork(5, 500, 32, [100,100,100])
-#neuralNetwork.train_neural_network(100, "b")
+#neuralNetwork.train_neural_network(10, "b")
 #neuralNetwork.evaluate_model("testModel")
-
-# TESTS TODAY:
-# all testing on validation data
-# NN: 3 hidden layers, 2 - 512 per layer (9 tests)
-# RNN: size 2 - 512 (9 tests)
-# 30 epochs (30 min?) *time each test
-# each test: accuracy, time
 
 def testNumNodes():
 	numEpochs = 40
-	# NN tests
+	# NN tests, using batch size 32, 3 hidden layers
 	numNodes = 2
 	for i in range(9):
 		print("NN: numNodes=", numNodes)
@@ -32,7 +25,7 @@ def testNumNodes():
 		timeToRun = datetime.datetime.now() - startTime
 		numNodes *= 2
 		print("Time to train: ", timeToRun)
-	# RNN tests
+	# RNN tests, using batch size 32
 	numNodes = 2
 	for i in range(9):
 		print("RNN: numNodes=", numNodes)
@@ -42,5 +35,19 @@ def testNumNodes():
 		timeToRun = datetime.datetime.now() - startTime
 		numNodes *= 2
 		print("Time to train: ", timeToRun)
-		
-testNumNodes()
+
+def testNeuralNet():
+	# using batch size 32, 3 hidden layers, 128 nodes per hidden layer
+	neuralNetwork = nn.NeuralNetwork(5, 500, 32, [128,128,128])
+	# 1000 epochs
+	neuralNetwork.train_neural_network(1000, "NN")
+	
+def testRecurrentNeuralNet():
+	# using batch size 32, 128 nodes per layer
+	recurrentNN = rnn.RecurrentNeuralNetwork(5, 50, 10, 128, 32)
+	# 1000 epochs
+	recurrentNN.train_neural_network(1000, "RNN")
+
+#testNumNodes()
+#testNeuralNet()
+testRecurrentNeuralNet()

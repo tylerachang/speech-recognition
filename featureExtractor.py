@@ -20,7 +20,7 @@ def getFeatures(filename):
 	"""
 		Computes features for a .wav file, in (n x 1) vector form.
 		Can modify this function to get different features, but remember to change
-		num features in the neural network. Included some commented-out code for
+		num features in speechRecognition.py. Included some commented-out code for
 		possible other features.
 	"""
 	numWindows = 50
@@ -32,7 +32,7 @@ def getFeatures(filename):
 #	featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitude(spectrogram)), axis=1)
 	# can add frequencies at various percentiles for each window
 #	featuresMatrix = np.concatenate((featuresMatrix, \
-#		getFrequencyPercentiles(spectrogram, 3)), axis=1)
+#		getFrequencyPercentiles(spectrogram, 5)), axis=1)
 
 	featuresMatrix = np.concatenate((featuresMatrix, getAverageAmplitudes(spectrogram, 10)), axis=1)
 
@@ -130,7 +130,7 @@ def getAverageAmplitudes(spectrogram, numFrequencyBins):
 	numAmplitudesToAverage = spectrogram.shape[1]//numFrequencyBins
 	for i in range(numFrequencyBins):
 		# consider only some frequencies in the spectrogram
-		partialSpectrogram = spectrogram[:,i*numAmplitudesToAverage:(i+1)*numAmplitudesToAverage+1]
+		partialSpectrogram = spectrogram[:,i*numAmplitudesToAverage:(i+1)*numAmplitudesToAverage]
 		averageAmplitudes = partialSpectrogram.sum(axis=1)/numAmplitudesToAverage
 		amplitudeMatrix = np.concatenate((amplitudeMatrix, \
 			averageAmplitudes.reshape(averageAmplitudes.shape[0],1)), axis=1)

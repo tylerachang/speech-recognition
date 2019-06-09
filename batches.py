@@ -10,6 +10,52 @@ from os import walk
 word2index = {'backward':0,'bed':1, 'bird':2,'cat':3, 'dog':4}
 dataPath = './data/'
 
+class TrainingData:
+	"""
+		Class to load training data with features.
+		Stores the examples with features extracted for faster performance.
+	"""
+	
+	def __init__(self, numFeatures):
+		self.numFeatures = numFeatures
+		# Store as a matrix where each row contains a feature and
+		# label vector concatenated
+		self.trainingData = np.zeros((0, self.numFeatures + len(word2index.keys())))
+		self.loadTrainingData('trainingDataPaths.txt')
+	
+	def loadTrainingData(self, filePaths):
+		"""
+			Loads the training data.
+		"""
+		f = open(filePaths, 'r')
+		files = f.readlines()
+		for filePath in files:
+			featureVector = featureExtractor.getFeatures(filePath[:-1])
+			word = filePath.split('/')[2]
+			wordIndex = word2index[word]
+			# get labels as a one-hot vector
+			labelVector = np.zeros(len(word2index.keys()))
+			labelVector[wordIndex] = 1
+			concatenatedVector = np.concatenate((featureVector, labelVector), axis=0)
+			concatenatedVector = concatenatedVector.reshape( \
+				(1, self.numFeatures + len(word2index.keys())))
+			self.trainingData = np.concatenate((self.trainingData, concatenatedVector), axis=0)
+								   
+	def getTrainingBatches(self, batchSize, numBatches):
+		"""
+			Same as getBatches() for the training data but with faster performance.
+			For each batch, selects batchSize examples from the data.
+			Returns a list of numBatch number of batches that cover the entire
+			training dataset.
+		"""
+		np.random.shuffle(self.trainingData)
+		epochXList = []
+		epochYList = []
+		for i in range(numBatches):
+			epochXList.append(self.trainingData[i*batchSize:(i+1)*batchSize,0:self.numFeatures])
+			epochYList.append(self.trainingData[i*batchSize:(i+1)*batchSize,self.numFeatures:])
+		return epochXList, epochYList
+
 def getTotalNumFiles(filePaths = 'trainingDataPaths.txt'):
 	"""
 		Returns the number of filepaths listed in a text file.
@@ -23,6 +69,7 @@ def getBatches(batchSize, numBatches, filePaths = 'trainingDataPaths.txt'):
 		For each batch, selects batchSize examples from the data.
 		Returns a list of numBatch number of batches that cover the entire
 		training dataset.
+		NOTE: now use trainingData.getTrainingBatches for faster performance.
 	"""
 	f = open(filePaths, 'r')
 	files = f.readlines()

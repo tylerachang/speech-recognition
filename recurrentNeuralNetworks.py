@@ -9,6 +9,7 @@
 import tensorflow as tf
 import batches
 import numpy as np
+import datetime
 
 class RecurrentNeuralNetwork:
 	
@@ -22,7 +23,9 @@ class RecurrentNeuralNetwork:
 		# not throw any errors
 		self.batch_size = batch_size
 		self.n_chunks = n_chunks
-		self.chunk_size = chunk_size	
+		self.chunk_size = chunk_size
+		
+		self.trainingData = batches.TrainingData(self.n_chunks * self.chunk_size)
 
 	def recurrent_neural_network_model(self, data):
 		"""
@@ -67,7 +70,8 @@ class RecurrentNeuralNetwork:
 				epoch_loss = 0
 				n_batches = self.n_examples//self.batch_size
 				epoch_x_list, epoch_y_list = \
-					batches.getBatches(self.batch_size, n_batches)
+					self.trainingData.getTrainingBatches(self.batch_size, n_batches)
+				startTime = datetime.datetime.now()
 				for i in range(n_batches):
 					epoch_x = epoch_x_list[i]
 					epoch_y = epoch_y_list[i]
@@ -77,12 +81,14 @@ class RecurrentNeuralNetwork:
 					_, c = sess.run([optimizer, cost], feed_dict={x:epoch_x, y:epoch_y})
 					epoch_loss += c
 				epoch_loss /= n_batches
+				epochTime = datetime.datetime.now() - startTime
+				print("Epoch time: ", epochTime)
 				print('Epoch', epoch, 'completed out of', n_epochs, 'loss:', epoch_loss)
 
 				# print the accuracy on the validation data
 				correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
 				accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
-				val_x, val_y = batches.getValidationData()
+				val_x, val_y = batches.getTestData() # change this back
 				val_x = val_x.reshape((-1, self.n_chunks, self.chunk_size))
 				print('Accuracy:', accuracy.eval({x: val_x, y: val_y}))
 			
