@@ -2,7 +2,7 @@
 	Implementation of an LSTM neural network using TensorFlow (v1).
 	Uses out-of-the-box LSTM cell implementations.
 	
-	Code modified from:
+	Code tutorial:
 	https://pythonprogramming.net/tensorflow-neural-network-session-machine-learning-tutorial/
 """
 
@@ -14,6 +14,7 @@ import datetime
 class RecurrentNeuralNetwork:
 	
 	def __init__(self, n_classes, n_chunks, chunk_size, rnn_size, batch_size):
+		print("Initializing RNN.")
 		tf.reset_default_graph()
 		self.rnn_size = rnn_size
 			
@@ -25,7 +26,9 @@ class RecurrentNeuralNetwork:
 		self.n_chunks = n_chunks
 		self.chunk_size = chunk_size
 		
+		print("Loading features.")
 		self.trainingData = batches.TrainingData(self.n_chunks * self.chunk_size)
+		print("Loaded features.")
 
 	def recurrent_neural_network_model(self, data):
 		"""
@@ -44,6 +47,11 @@ class RecurrentNeuralNetwork:
 		data = tf.split(data, self.n_chunks, 0)
 
 		lstm_cell = tf.nn.rnn_cell.LSTMCell(self.rnn_size, state_is_tuple=True)
+		
+		# We usually need to construct a computation graph first in TensorFlow.
+		# Static rnn builds a static computational graph with a fixed number of time steps, but
+		# dynamic rnn would build the computational graph as it executed and thus would
+		# allow input sequences with variable length.
 		outputs, states = tf.nn.static_rnn(lstm_cell, data, dtype=tf.float32)
 
 		output = tf.matmul(outputs[-1],outputLayer['weights']) + outputLayer['biases']
@@ -88,9 +96,9 @@ class RecurrentNeuralNetwork:
 				# print the accuracy on the validation data
 				correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
 				accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
-				val_x, val_y = batches.getTestData() # change this back
+				val_x, val_y = batches.getValidationData()
 				val_x = val_x.reshape((-1, self.n_chunks, self.chunk_size))
-				print('Accuracy:', accuracy.eval({x: val_x, y: val_y}))
+				print('Validation accuracy:', accuracy.eval({x: val_x, y: val_y}))
 			
 			# save the model
 			if output_dir != "":
@@ -110,5 +118,5 @@ class RecurrentNeuralNetwork:
 		for i in range(test_x.shape[0]):
 			if np.argmax(prediction[i]) == np.argmax(test_y[i]):
 				numCorrect += 1
-		print('Accuracy:', float(numCorrect)/test_x.shape[0])
+		print('Test accuracy:', float(numCorrect)/test_x.shape[0])
 

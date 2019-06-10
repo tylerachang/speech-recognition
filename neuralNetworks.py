@@ -2,7 +2,7 @@
 	Implementation of a neural network using TensorFlow (v1).
 	Implements a basic feedforward NN.
 	
-	Code modified from:
+	Code tutorial:
 	https://pythonprogramming.net/tensorflow-neural-network-session-machine-learning-tutorial/
 """
 
@@ -14,6 +14,7 @@ import datetime
 class NeuralNetwork:
 	
 	def __init__(self, n_classes, n_features, batch_size, n_hidden_nodes = [10,10,10]):
+		print("Initializing neural net.")
 		tf.reset_default_graph()
 		self.n_hidden_nodes = n_hidden_nodes
 		self.n_hidden_layers = len(self.n_hidden_nodes)
@@ -25,7 +26,9 @@ class NeuralNetwork:
 		self.batch_size = batch_size
 		self.n_features = n_features
 		
+		print("Loading features.")
 		self.trainingData = batches.TrainingData(self.n_features)
+		print("Loaded features.")
 
 	def neural_network_model(self, data):
 		"""
@@ -88,8 +91,8 @@ class NeuralNetwork:
 				# print the accuracy on the validation data
 				correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
 				accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
-				val_x, val_y = batches.getTestData() # change this back
-				print('Accuracy:', accuracy.eval({x: val_x, y: val_y}))
+				val_x, val_y = batches.getValidationData() # change this back
+				print('Validation accuracy:', accuracy.eval({x: val_x, y: val_y}))
 
 			# save the model
 			if output_dir != "":
@@ -108,5 +111,5 @@ class NeuralNetwork:
 		for i in range(test_x.shape[0]):
 			if np.argmax(prediction[i]) == np.argmax(test_y[i]):
 				numCorrect += 1
-		print('Accuracy:', float(numCorrect)/test_x.shape[0])
+		print('Test accuracy:', float(numCorrect)/test_x.shape[0])
 

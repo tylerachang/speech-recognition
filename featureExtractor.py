@@ -75,7 +75,7 @@ def displaySpectrogram(spectrogram):
 	"""
 	# transpose spectrogram to plot time (window) on x-axis and frequency on y-axis
 	spectrogram = spectrogram.T
-	heatmap = plt.imshow(spectrogram, cmap = plt.cm.Blues, aspect='auto')
+	heatmap = plt.imshow(spectrogram, cmap = plt.cm.Purples, aspect='auto')
 	plt.title("Spectrogram")
 	plt.xlabel("Time")
 	plt.ylabel("Frequency")
