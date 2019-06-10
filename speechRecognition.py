@@ -43,7 +43,7 @@ def testNeuralNet():
 	neuralNetwork = nn.NeuralNetwork(5, 500, 32, [128,128,128])
 	# 1000 epochs
 	neuralNetwork.train_neural_network(1000, "NN")
-	
+
 def testRecurrentNeuralNet():
 	"""
 		Trains a sample recurrent neural net.
@@ -53,26 +53,85 @@ def testRecurrentNeuralNet():
 	# 1000 epochs
 	recurrentNN.train_neural_network(1000, "RNN")
 
+def parse_args():
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--batch_size',
+						default=32,
+						type=int,
+						help='batch size')
+	parser.add_argument('--rnn_size',
+						default=128,
+						type=int,
+						help='number of hidden units in RNN')
+	parser.add_argument('--output',
+						default='',
+						type=str,
+						help='output directory')
+	parser.add_argument('--num_epochs',
+						default=10,
+						type=int,
+						help='number of epochs for training')
+	parser.add_argument('--h_layers',
+						nargs='+',
+						type=int,
+						help='structure of hidden layers')
+	parser.add_argument('--rnn',
+						default=False,
+						type=bool,
+						help='use RNN')
+	parser.add_argument('--mlp',
+						default=False,
+						type=bool,
+						help='use MLP')
+	parser.add_argument('--train',
+						default=False,
+						type=bool,
+						help='train a model')
+	parser.add_argument('--eval',
+						default=False,
+						type=bool,
+						help='evaluate a model')
+	parser.add_argument('--input',
+						default='',
+						type=str,
+						help='input directory for the model we are evaluating or .wav file for spectrogram display')
+	parser.add_argument('--spectrogram',
+						default=False,
+						type=bool,
+						help='display spectrogram for the features')
+	return parser.parse_args()
+
+
 def main():
 	"""
 		Takes commands from the command line.
 	"""
-	
 	# let her train NN & RNN, evaluate NN & RNN, display spectrogram
-	parser = argparse.ArgumentParser(description='Process some integers.')
-	parser.add_argument('integers', metavar='N', type=int, nargs='+',
-                   help='an integer for the accumulator')
-	parser.add_argument('--sum', dest='accumulate', action='store_const',
-					   const=sum, default=max,
-					   help='sum the integers (default: find the max)')
+	args = parse_args()
+	if args.train:
+		if args.rnn:
+			recurrentNN = rnn.RecurrentNeuralNetwork(5, 50, 10, args.rnn_size, args.batch_size)
+			rnn.train_neural_network(args.num_epochs, args.output)
+		elif args.mlp:
+			mlp = nn.NeuralNetwork(5, 500, args.batch_size, args.h_layers)
+			neuralNetwork.train_neural_network(args.num_epochs, args.output)
+		else:
+			return "Please specify type of model you want to train. (See readme.txt)"
+	elif args.eval:
+		if args.rnn:
+			rnn.evaluate_model(args.input)
+		elif args.mlp:
+			nn.evaluate_model(args.input)
+		else:
+			return "Please specify type of model you want to evaluate. (See readme.txt)"
+	elif args.spectrogram:
+		featureExtractor.displaySpectrogram(featureExtractor.computeSpectrogramFromFile(args.input, 50))
+	else:
+		return "You should choose an option among training, evaluation, and spectrogram display. (See readme.txt)"
 
 
-
-
-	args = parser.parse_args()
-	print(args.accumulate(args.integers))
-	
-	#rnn = rnn.RecurrentNeuralNetwork(5, 50, 10, 128, 100)
+main()
+#rnn = rnn.RecurrentNeuralNetwork(5, 50, 10, 128, 100)
 #rnn.train_neural_network(5, "")
 #rnn.evaluate_model("x")
 #neuralNetwork = nn.NeuralNetwork(5, 500, 32, [100,100,100])
@@ -81,4 +140,4 @@ def main():
 #testNumNodes()
 #testNeuralNet()
 #testRecurrentNeuralNet()
-featureExtractor.displaySpectrogram(featureExtractor.computeSpectrogramFromFile("dog0.wav", 50))
+#featureExtractor.displaySpectrogram(featureExtractor.computeSpectrogramFromFile("dog0.wav", 50))
