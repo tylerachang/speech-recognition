@@ -79,30 +79,40 @@ def parse_args():
 						type=int,
 						default=[10,10,10],
 						help='structure of hidden layers')
-	parser.add_argument('--rnn',
-						default=False,
-						type=bool,
-						help='use RNN')
-	parser.add_argument('--mlp',
-						default=False,
-						type=bool,
-						help='use MLP')
-	parser.add_argument('--train',
-						default=False,
-						type=bool,
-						help='train a model')
-	parser.add_argument('--eval',
-						default=False,
-						type=bool,
-						help='evaluate a model')
 	parser.add_argument('--input',
 						default='',
 						type=str,
 						help='input directory for the model we are evaluating or .wav file for spectrogram display')
-	parser.add_argument('--spectrogram',
-						default=False,
+	parser.add_argument('--rnn',
 						type=bool,
-						help='display spectrogram for the features')
+						nargs='?',
+                        const=True,
+						default=False,
+                        help='use RNN')
+	parser.add_argument('--mlp',
+						type=bool,
+						nargs='?',
+                        const=True,
+						default=False,
+                        help='use MLP')
+	parser.add_argument('--train',
+						type=bool,
+						nargs='?',
+                        const=True,
+						default=False,
+                        help='train a model')
+	parser.add_argument('--eval',
+						type=bool,
+						nargs='?',
+                        const=True,
+						default=False,
+                        help='evaluate a model')
+	parser.add_argument('--spectrogram',
+						type=bool,
+						nargs='?',
+                        const=True,
+						default=False,
+                        help='display spectrogram for the features')
 	return parser.parse_args()
 
 
