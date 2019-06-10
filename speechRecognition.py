@@ -114,10 +114,10 @@ def main():
 	if args.train:
 		if args.rnn:
 			recurrentNN = rnn.RecurrentNeuralNetwork(5, 50, 10, args.rnn_size, args.batch_size)
-			rnn.train_neural_network(args.num_epochs, args.output)
+			recurrentNN.train_neural_network(args.num_epochs, args.output)
 		elif args.mlp:
 			mlp = nn.NeuralNetwork(5, 500, args.batch_size, args.h_layers)
-			neuralNetwork.train_neural_network(args.num_epochs, args.output)
+			mlp.train_neural_network(args.num_epochs, args.output)
 		else:
 			print("Please specify type of model you want to train. (See readme.txt)")
 	elif args.eval:
