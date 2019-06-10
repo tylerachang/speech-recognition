@@ -100,16 +100,16 @@ class NeuralNetwork:
 					inputs={'x':x}, outputs={'prediction':prediction})
 				print("Model saved to: ", output_dir)
 
-	def evaluate_model(self, model_dir):
-		"""
-			Evaluates the accuracy of a saved model on the test data.
-		"""
-		predictFunc = tf.contrib.predictor.from_saved_model(model_dir)
-		test_x, test_y = batches.getTestData()
-		prediction = predictFunc({'x':test_x})['prediction']
-		numCorrect = 0
-		for i in range(test_x.shape[0]):
-			if np.argmax(prediction[i]) == np.argmax(test_y[i]):
-				numCorrect += 1
-		print('Test accuracy:', float(numCorrect)/test_x.shape[0])
+def evaluate_model(model_dir):
+	"""
+		Evaluates the accuracy of a saved model on the test data.
+	"""
+	predictFunc = tf.contrib.predictor.from_saved_model(model_dir)
+	test_x, test_y = batches.getTestData()
+	prediction = predictFunc({'x':test_x})['prediction']
+	numCorrect = 0
+	for i in range(test_x.shape[0]):
+		if np.argmax(prediction[i]) == np.argmax(test_y[i]):
+			numCorrect += 1
+	print('Test accuracy:', float(numCorrect)/test_x.shape[0])
 

@@ -20,8 +20,8 @@ def getFeatures(filename):
 	"""
 		Computes features for a .wav file, in (n x 1) vector form.
 		Can modify this function to get different features, but remember to change
-		num features in speechRecognition.py. Included some commented-out code for
-		possible other features.
+		the number of features when initializing the NNs in speechRecognition.py.
+		Included some commented-out code for possible other features.
 	"""
 	numWindows = 50
 	spectrogram = computeSpectrogramFromFile(filename, numWindows)
