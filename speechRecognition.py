@@ -54,6 +54,9 @@ def testRecurrentNeuralNet():
 	recurrentNN.train_neural_network(1000, "RNN")
 
 def parse_args():
+	"""
+		Parses commandline arguments.
+	"""
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--batch_size',
 						default=32,
@@ -74,6 +77,7 @@ def parse_args():
 	parser.add_argument('--h_layers',
 						nargs='+',
 						type=int,
+						default=[10,10,10],
 						help='structure of hidden layers')
 	parser.add_argument('--rnn',
 						default=False,
@@ -106,7 +110,6 @@ def main():
 	"""
 		Takes commands from the command line.
 	"""
-	# let her train NN & RNN, evaluate NN & RNN, display spectrogram
 	args = parse_args()
 	if args.train:
 		if args.rnn:
@@ -116,28 +119,18 @@ def main():
 			mlp = nn.NeuralNetwork(5, 500, args.batch_size, args.h_layers)
 			neuralNetwork.train_neural_network(args.num_epochs, args.output)
 		else:
-			return "Please specify type of model you want to train. (See readme.txt)"
+			print("Please specify type of model you want to train. (See readme.txt)")
 	elif args.eval:
 		if args.rnn:
 			rnn.evaluate_model(args.input)
 		elif args.mlp:
 			nn.evaluate_model(args.input)
 		else:
-			return "Please specify type of model you want to evaluate. (See readme.txt)"
+			print("Please specify type of model you want to evaluate. (See readme.txt)")
 	elif args.spectrogram:
 		featureExtractor.displaySpectrogram(featureExtractor.computeSpectrogramFromFile(args.input, 50))
 	else:
-		return "You should choose an option among training, evaluation, and spectrogram display. (See readme.txt)"
+		print("You should choose an option among training, evaluation, and spectrogram display. (See readme.txt)")
 
-
-main()
-#rnn = rnn.RecurrentNeuralNetwork(5, 50, 10, 128, 100)
-#rnn.train_neural_network(5, "")
-#rnn.evaluate_model("x")
-#neuralNetwork = nn.NeuralNetwork(5, 500, 32, [100,100,100])
-#neuralNetwork.train_neural_network(10, "b")
-#neuralNetwork.evaluate_model("testModel")
-#testNumNodes()
-#testNeuralNet()
-#testRecurrentNeuralNet()
-#featureExtractor.displaySpectrogram(featureExtractor.computeSpectrogramFromFile("dog0.wav", 50))
+if __name__ == '__main__':
+    main()
