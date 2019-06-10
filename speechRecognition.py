@@ -132,7 +132,7 @@ def main():
 			print("Please specify type of model you want to train. (See readme.txt)")
 	elif args.eval:
 		if args.rnn:
-			rnn.evaluate_model(args.input)
+			rnn.evaluate_model(args.input, 50, 10)
 		elif args.mlp:
 			nn.evaluate_model(args.input)
 		else:

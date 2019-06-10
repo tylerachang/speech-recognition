@@ -106,13 +106,13 @@ class RecurrentNeuralNetwork:
 					inputs={'x':x}, outputs={'prediction':prediction})
 				print("Model saved to: ", output_dir)
 
-def evaluate_model(model_dir):
+def evaluate_model(model_dir, n_chunks, chunk_size):
 	"""
 		Evaluates the accuracy of a saved model on the test data.
 	"""
 	predictFunc = tf.contrib.predictor.from_saved_model(model_dir)
 	test_x, test_y = batches.getTestData()
-	test_x = test_x.reshape((-1, self.n_chunks, self.chunk_size))
+	test_x = test_x.reshape((-1, n_chunks, chunk_size))
 	prediction = predictFunc({'x':test_x})['prediction']
 	numCorrect = 0
 	for i in range(test_x.shape[0]):
